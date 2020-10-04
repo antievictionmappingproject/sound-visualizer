@@ -1,2 +1,2 @@
 # soundvisualizer
-COVID-19 Oral Histories Sound Visualizer
+COVID-19 oral histories sound visualizer and interactive design mechanism
