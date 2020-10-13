@@ -1,4 +1,3 @@
-import p5 from "p5";
 /** [p5.sound]  Version: 0.3.12 - 2020-01-06 */
  /**
  *  <p>p5.sound extends p5 with <a href="http://caniuse.com/audio-api"
