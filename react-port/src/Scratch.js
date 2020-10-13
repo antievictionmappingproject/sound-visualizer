@@ -13,24 +13,26 @@ function Scratch(props) {
     let sliderVolume;
 
     const setup = (ctx, canvasParentRef) => {
+        // We use `ctx` instead of `p5` to avoid conflicts with window.p5
+        // window.p5 is where p5.sound.js binds our audio constructions e.g.
+        // Amplitude(), FFT(), etc...
         ctx.createCanvas(500, 500).parent(canvasParentRef);
         
-        // GUI
+        
         const toggleButton = () => {
-            if (audio.isPlaying()) {// .isPlaying() returns a boolean
-              audio.pause(); // .play() will resume from .pause() position
-              button.html("play");
-              //background(255, 0, 0);
+            if (audio.isPlaying()) {
+                audio.pause();
+                button.html("play");
             } else {
-              audio.play();
-              button.html("pause");
-              ctx.background(0, 255, 0);
+                audio.play();
+                button.html("pause");
             }
         }
         
-        // AUDIO
+        
         audio = ctx.loadSound(props.audioPath, () => {
-            // Callback func runs when finished loading
+            // Callback func runs when finished loading, using
+            // because sync issues with react-p5's preload
             audio.loop()
             audio.pause()
             amp = new window.p5.Amplitude();
