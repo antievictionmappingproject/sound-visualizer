@@ -5,7 +5,7 @@ import "p5/lib/addons/p5.sound";
 import { colors } from "./const.js";
 
 export default (props) => {
-    let song;
+    let audio;
     let sliderVolume;
     let button;
     let amp;
@@ -23,12 +23,12 @@ export default (props) => {
     const color_change_rate = 3;
 
     const preload = (ctx) => {
-      song = ctx.loadSound('/audio/blinding_lights.mp3');
+      audio = ctx.loadSound('/audio/alexxint.mp3');
     }
 
     const setup = (ctx, canvasParentRef) => {
       ctx.createCanvas(width, height).parent(canvasParentRef);
-      song.loop();
+      audio.loop();
       ctx.background(255, 0, 0);
       sliderVolume = ctx.createSlider(0, 1, 0.5, 0.01);
       button = ctx.createButton("pause");
@@ -38,49 +38,18 @@ export default (props) => {
     };
 
     const toggleButton = (ctx) => {
-      if (song.isPlaying()) {// .isPlaying() returns a boolean
-        song.pause(); // .play() will resume from .pause() position
+      if (audio.isPlaying()) {// .isPlaying() returns a boolean
+        audio.pause(); // .play() will resume from .pause() position
         button.html("play");
       } else {
-        song.play();
+        audio.play();
         button.html("pause");
       }
     }
 
     const draw = (ctx) => {
 
-      class BeatCircle {
-        constructor(x, y) {
-          this.x = x;
-          this.y = y;
-          this.r = 20;
-          this.m = 6;
-          this.lifespan = 300;
-        }
-        run() {
-          this.update();
-          this.display();
-        }
-        update() {
-          this.r += this.m;
-          this.lifespan -= 2.0;
-        }
-        display() {
-          ctx.stroke(255, this.lifespan);
-          ctx.trokeWeight(2);
-          ctx.noFill();
-          ctx.ellipse(this.x, this.y, this.r, this.r);
-        }
-        isDead() {
-          if (this.lifespan < 0.0) {
-            return true;
-          } else {
-            return false;
-          }
-        }
-      }
-
-      song.setVolume(sliderVolume.value());
+      audio.setVolume(sliderVolume.value());
       ctx.background(colors[colorIndex]);
       var vol = amp.getLevel();
       vol_arr.push(vol);
@@ -95,8 +64,8 @@ export default (props) => {
       if (vol > color_change_rate * vol_avg) {
         change = change + 1;
         if (change == 10) {
-          circle_arr.push(new BeatCircle(width / 2, height / 2));
-          if (song.isPlaying()) {
+          circle_arr.push(new BeatCircle(width / 2, height / 2, ctx));
+          if (audio.isPlaying()) {
             change = 0;
             let spectrum = fft.analyze();
             let max = spectrum[0];
@@ -106,7 +75,7 @@ export default (props) => {
                 if (spectrum[i] < min) min = spectrum[i];
             }
             let avg = (max + min) / 2;
-            colorIndex = Math.floor(map (avg, 0, 255, 0, 280));
+            colorIndex = Math.floor(ctx.map (avg, 0, 255, 0, 280));
             ctx.background(colors[colorIndex]);
           }
         }
@@ -134,3 +103,35 @@ export default (props) => {
 
     return <Sketch preload={preload} setup={setup} draw={draw} />;
 };
+
+class BeatCircle {
+  constructor(x, y, ctx) {
+    this.ctx = ctx;
+    this.x = x;
+    this.y = y;
+    this.r = 20;
+    this.m = 6;
+    this.lifespan = 300;
+  }
+  run() {
+    this.update();
+    this.display();
+  }
+  update() {
+    this.r += this.m;
+    this.lifespan -= 2.0;
+  }
+  display() {
+    this.ctx.stroke(255, this.lifespan);
+    this.ctx.strokeWeight(2);
+    this.ctx.noFill();
+    this.ctx.ellipse(this.x, this.y, this.r, this.r);
+  }
+  isDead() {
+    if (this.lifespan < 0.0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+}

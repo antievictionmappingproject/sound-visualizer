@@ -1,11 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Scene from './Scene';
+import Root from './Root';
 //import Scratch from './Scratch';
 
 ReactDOM.render(
   <React.StrictMode>
-    <Scene />
+    <Root />
   </React.StrictMode>,
   document.getElementById('root')
 );
