@@ -6,8 +6,8 @@ export default (props) => {
   return (
     <div className="sound-visualizer">
       <Scene timelineActions={[
-        {seconds: 5, action: () => setShowPopup(true)},
-        {seconds: 10, action: () => setShowPopup(false)}
+        {seconds: 1, action: () => {setShowPopup(true)}},
+        {seconds: 3, action: () => {setShowPopup(false)}},
       ]} />
       <div className="pop-up" style={{opacity: showPopup ? 1 : 0}}>
         <a href="">i'm a popup</a>

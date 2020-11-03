@@ -1,19 +1,20 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import Sketch from "react-p5";
 import "p5/lib/addons/p5.sound";
 
 import { colors } from "./const.js";
 
 export default (props) => {
+    const audioRef = useRef(null);
     let audio;
     let sliderVolume;
     let button;
-    let amp;
-    let fft;
+    let ampRef = useRef(null);
+    let fftRef = useRef(null);
     let change = 0;
     let colorIndex = 0;
-    let width = 400;
-    let height = 400;
+    let width = 200;
+    let height = 200;
     let circle;
     let diam = 0;
     let circle_arr = [];
@@ -23,33 +24,43 @@ export default (props) => {
     const color_change_rate = 3;
 
     const preload = (ctx) => {
-      audio = ctx.loadSound('/audio/alexxint.mp3');
+      // nothing for now...
+      audioRef.current = ctx.loadSound('/audio/blinding_lights.mp3')
     }
 
     const setup = (ctx, canvasParentRef) => {
       ctx.createCanvas(width, height).parent(canvasParentRef);
-      audio.loop();
+      // audioRef.current.pause();
+      audioRef.current.loop();
+
+      props.timelineActions.forEach((ta, i) => {
+        audioRef.current.addCue(ta.seconds, ta.action)
+      })
+
       ctx.background(255, 0, 0);
       sliderVolume = ctx.createSlider(0, 1, 0.5, 0.01);
+      sliderVolume.input(() => {
+        audioRef.current.setVolume(sliderVolume.value());
+      })
       button = ctx.createButton("pause");
       button.mousePressed(toggleButton);
-      amp = new window.p5.Amplitude();
-      fft = new window.p5.FFT();
+      ampRef.current = new window.p5.Amplitude();
+      fftRef.current = new window.p5.FFT();
     };
 
     const toggleButton = (ctx) => {
-      if (audio.isPlaying()) {// .isPlaying() returns a boolean
-        audio.pause(); // .play() will resume from .pause() position
+      if (audioRef.current.isPlaying()) {// .isPlaying() returns a boolean
+        audioRef.current.pause(); // .play() will resume from .pause() position
         button.html("play");
       } else {
-        audio.play();
+        audioRef.current.play();
         button.html("pause");
       }
     }
 
     const draw = (ctx) => {
-
-      audio.setVolume(sliderVolume.value());
+      const amp = ampRef.current;
+      const fft = fftRef.current;
       ctx.background(colors[colorIndex]);
       var vol = amp.getLevel();
       vol_arr.push(vol);
@@ -65,7 +76,7 @@ export default (props) => {
         change = change + 1;
         if (change == 10) {
           circle_arr.push(new BeatCircle(width / 2, height / 2, ctx));
-          if (audio.isPlaying()) {
+          if (audioRef.current.isPlaying()) {
             change = 0;
             let spectrum = fft.analyze();
             let max = spectrum[0];
