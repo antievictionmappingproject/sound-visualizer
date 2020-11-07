@@ -1,0 +1,20 @@
+#Controls .playback-cnr {
+    display: flex;
+}
+
+#Controls .button {
+    width: 4em;
+    height: 3em;
+}
+
+#Controls .button img,
+#Controls .button svg {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+}
+
+#Controls .slider-cnr {
+    margin-top: 2em;
+}

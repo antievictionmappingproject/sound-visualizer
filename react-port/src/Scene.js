@@ -1,11 +1,23 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import Sketch from "react-p5";
 import "p5/lib/addons/p5.sound";
+import AudioPlaybackContext from "./AudioPlaybackContext";
 
 import { colors } from "./const.js";
 
+function usePrevious(value) {
+  const ref = useRef();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+}
+
 export default (props) => {
     const audioRef = useRef(null);
+    const [loaded, setLoaded] = useState(false);
+    const audioPlayback = useContext(AudioPlaybackContext);
+
     let audio;
     let sliderVolume;
     let button;
@@ -23,42 +35,53 @@ export default (props) => {
     let average = (array) => array.reduce((a, b) => a + b) / array.length;
     const color_change_rate = 3;
 
-    const preload = (ctx) => {
-      // nothing for now...
-      audioRef.current = ctx.loadSound('/audio/blinding_lights.mp3')
-    }
+    const previousAudioPlayback = usePrevious(audioPlayback)
+
+    useEffect(() => {
+      if (audioRef.current) {
+        const { paused, volume } = audioPlayback
+        const { paused: prevPaused, volume: prevVolume } = previousAudioPlayback
+        if (paused && !prevPaused) { audioRef.current.pause(); }
+        if (!paused && prevPaused) { audioRef.current.play(); }
+        if (volume !== prevVolume) { audioRef.current.setVolume(volume) }
+      }
+    }, [audioPlayback, audioRef])
 
     const setup = (ctx, canvasParentRef) => {
-      ctx.createCanvas(width, height).parent(canvasParentRef);
-      // audioRef.current.pause();
-      audioRef.current.loop();
-
-      props.timelineActions.forEach((ta, i) => {
-        audioRef.current.addCue(ta.seconds, ta.action)
+      Promise.resolve().then(() => {
+        return new Promise((resolve, reject) => {
+          audioRef.current = ctx.loadSound('/audio/save.mp3', () => {
+            resolve()
+          })
+        })
+      }).then(() => {
+        ctx.createCanvas(width, height).parent(canvasParentRef);
+        audioRef.current.loop();
+        audioRef.current.pause();
+  
+        props.timelineActions.forEach((ta, i) => {
+          audioRef.current.addCue(ta.seconds, ta.action)
+        })
+  
+        ctx.background(255, 0, 0);
+        ampRef.current = new window.p5.Amplitude();
+        fftRef.current = new window.p5.FFT();
+        setLoaded(true)
       })
-
-      ctx.background(255, 0, 0);
-      sliderVolume = ctx.createSlider(0, 1, 0.5, 0.01);
-      sliderVolume.input(() => {
-        audioRef.current.setVolume(sliderVolume.value());
-      })
-      button = ctx.createButton("pause");
-      button.mousePressed(toggleButton);
-      ampRef.current = new window.p5.Amplitude();
-      fftRef.current = new window.p5.FFT();
     };
 
-    const toggleButton = (ctx) => {
-      if (audioRef.current.isPlaying()) {// .isPlaying() returns a boolean
-        audioRef.current.pause(); // .play() will resume from .pause() position
-        button.html("play");
-      } else {
-        audioRef.current.play();
-        button.html("pause");
-      }
-    }
+    // const toggleButton = (ctx) => {
+    //   if (audioRef.current.isPlaying()) {// .isPlaying() returns a boolean
+    //     audioRef.current.pause(); // .play() will resume from .pause() position
+    //     button.html("play");
+    //   } else {
+    //     audioRef.current.play();
+    //     button.html("pause");
+    //   }
+    // }
 
     const draw = (ctx) => {
+      if (!loaded) { return }
       const amp = ampRef.current;
       const fft = fftRef.current;
       ctx.background(colors[colorIndex]);
@@ -112,7 +135,7 @@ export default (props) => {
       }
     };
 
-    return <Sketch preload={preload} setup={setup} draw={draw} />;
+    return <Sketch setup={setup} draw={draw} />;
 };
 
 class BeatCircle {
