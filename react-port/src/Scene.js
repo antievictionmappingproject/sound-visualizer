@@ -14,6 +14,7 @@ function usePrevious(value) {
 }
 
 export default (props) => {
+    const { timelineActions, audioFilePath } = props
     const audioRef = useRef(null);
     const [loaded, setLoaded] = useState(false);
     const audioPlayback = useContext(AudioPlaybackContext);
@@ -50,7 +51,7 @@ export default (props) => {
     const setup = (ctx, canvasParentRef) => {
       Promise.resolve().then(() => {
         return new Promise((resolve, reject) => {
-          audioRef.current = ctx.loadSound('/audio/save.mp3', () => {
+          audioRef.current = ctx.loadSound(audioFilePath, () => {
             resolve()
           })
         })
@@ -59,7 +60,7 @@ export default (props) => {
         audioRef.current.loop();
         audioRef.current.pause();
   
-        props.timelineActions.forEach((ta, i) => {
+        timelineActions.forEach((ta, i) => {
           audioRef.current.addCue(ta.seconds, ta.action)
         })
   
@@ -69,16 +70,6 @@ export default (props) => {
         setLoaded(true)
       })
     };
-
-    // const toggleButton = (ctx) => {
-    //   if (audioRef.current.isPlaying()) {// .isPlaying() returns a boolean
-    //     audioRef.current.pause(); // .play() will resume from .pause() position
-    //     button.html("play");
-    //   } else {
-    //     audioRef.current.play();
-    //     button.html("pause");
-    //   }
-    // }
 
     const draw = (ctx) => {
       if (!loaded) { return }
