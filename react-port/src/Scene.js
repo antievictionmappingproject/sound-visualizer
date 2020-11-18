@@ -38,7 +38,7 @@ export default (props) => {
     const previousAudioPlayback = usePrevious(audioPlayback)
 
     useEffect(() => {
-      if (audioRef.current) {
+      if (previousAudioPlayback && audioRef.current) {
         const { paused, volume } = audioPlayback
         const { paused: prevPaused, volume: prevVolume } = previousAudioPlayback
         if (paused && !prevPaused) { audioRef.current.pause(); }
@@ -50,7 +50,7 @@ export default (props) => {
     const setup = (ctx, canvasParentRef) => {
       Promise.resolve().then(() => {
         return new Promise((resolve, reject) => {
-          audioRef.current = ctx.loadSound('/audio/save.mp3', () => {
+          audioRef.current = ctx.loadSound('https://ia801507.us.archive.org/18/items/alexint-edit-10-26/alexint%20%28edit%2010_26%29.mp3', () => {
             resolve()
           })
         })
@@ -58,11 +58,11 @@ export default (props) => {
         ctx.createCanvas(width, height).parent(canvasParentRef);
         audioRef.current.loop();
         audioRef.current.pause();
-  
+
         props.timelineActions.forEach((ta, i) => {
           audioRef.current.addCue(ta.seconds, ta.action)
         })
-  
+
         ctx.background(255, 0, 0);
         ampRef.current = new window.p5.Amplitude();
         fftRef.current = new window.p5.FFT();

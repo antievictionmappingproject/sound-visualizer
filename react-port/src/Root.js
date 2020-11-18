@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import Scene from './Scene';
 import Controls from './Controls';
 import AudioPlaybackContext from './AudioPlaybackContext';
+import "./index.scss";
+
 
 export default (props) => {
   const [showPopup, setShowPopup] = useState(false);
